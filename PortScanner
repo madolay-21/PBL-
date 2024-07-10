@@ -2,6 +2,7 @@
 
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import filedialog
 from PIL import Image, ImageTk
 import socket
 
@@ -29,6 +30,16 @@ def get_service_name(port, protocol):
     except:
         return 'UNKNOWN'
 
+# Fungsi untuk menyimpan hasil scanning ke file
+def save_results(results):
+    file_path = filedialog.asksaveasfilename(defaultextension=".txt",
+                                             filetypes=[("Text files", "*.txt"),
+                                                        ("All files", "*.*")])
+    if file_path:
+        with open(file_path, 'w') as file:
+            file.write('\n'.join(results))
+        messagebox.showinfo("Saved", f"Hasil pemindaian berhasil disimpan ke {file_path}")
+
 # Fungsi untuk memulai scanning saat tombol ditekan
 def start_scan():
     host = ip_entry.get()
@@ -51,6 +62,9 @@ def start_scan():
         results.append(f"Port {port} [{protocol}] is {status_text} Service [{service_name}]")
     
     result_text.set("\n".join(results))
+    
+    if save_var.get():
+        save_results(results)
 
 # Daftar port yang umum digunakan
 tcp_ports = [80, 443, 22, 445, 143]
@@ -62,13 +76,13 @@ root = tk.Tk()
 root.title("Port Scanner")
 
 # Memuat gambar latar belakang
-bg_image_path = "C:/Users/user/Pictures/rks.jpg"
+bg_image_path = "C:/Users/user/Pictures/sc.png"
 bg_image = Image.open(bg_image_path)
-bg_image = bg_image.resize((400, 500), Image.LANCZOS)  # Sesuaikan ukuran sesuai kebutuhan
+bg_image = bg_image.resize((350, 500), Image.LANCZOS)  
 bg_photo = ImageTk.PhotoImage(bg_image)
 
 # Menambahkan kanvas untuk gambar latar belakang
-canvas = tk.Canvas(root, width=400, height=500)
+canvas = tk.Canvas(root, width=350, height=500)
 canvas.pack(fill="both", expand=True)
 canvas.create_image(0, 0, image=bg_photo, anchor="nw")
 
@@ -79,7 +93,11 @@ ip_entry = tk.Entry(root, width=30)
 # Menambahkan checkbox untuk memilih port yang ingin di-scan
 ch_port = tk.Label(root, text="Choose Port:", bg="black", fg="white")
 port_vars = {port: tk.BooleanVar() for port in all_ports}
-port_labels = {port: tk.Checkbutton(root, text=f"{port} ({'TCP' if port in tcp_ports else 'UDP'})", var=var, bg="white", fg="blue") for port, var in port_vars.items()}
+port_labels = {port: tk.Checkbutton(root, text=f"{port} ({'TCP' if port in tcp_ports else 'UDP'})", var=var, bg="black", fg="grey") for port, var in port_vars.items()}
+
+# Menambahkan checkbox untuk memilih apakah hasil scan ingin disimpan
+save_var = tk.BooleanVar()
+save_checkbox = tk.Checkbutton(root, text="Save results to file", var=save_var, bg="black", fg="grey")
 
 # Menambahkan tombol untuk memulai scanning
 scan_button = tk.Button(root, text="Start Scan", command=start_scan)
@@ -89,15 +107,16 @@ result_text = tk.StringVar()
 result_label = tk.Label(root, textvariable=result_text, justify="left", bg="black", fg="green")
 
 # Menempatkan widget di atas kanvas
-canvas.create_window(200, 30, window=ip_label)
-canvas.create_window(200, 60, window=ip_entry)
+canvas.create_window(175, 30, window=ip_label)
+canvas.create_window(175, 60, window=ip_entry)
 
-canvas.create_window(200, 90, window=ch_port)
+canvas.create_window(175, 90, window=ch_port)
 for i, (port, label) in enumerate(port_labels.items()):
-    canvas.create_window(200, 120 + i * 30, window=label)
+    canvas.create_window(175, 120 + i * 30, window=label)
 
-canvas.create_window(200, 320, window=scan_button)
-canvas.create_window(200, 400, window=result_label)
+canvas.create_window(175, 320, window=save_checkbox)
+canvas.create_window(175, 360, window=scan_button)
+canvas.create_window(175, 400, window=result_label)
 
 # Menjalankan aplikasi
 root.mainloop()
